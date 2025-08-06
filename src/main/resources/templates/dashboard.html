@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faceless Video Dashboard - Enhanced Database Schema</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+        h1 {
+            font-size: 3em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle {
+            font-size: 1.3em;
+            margin: 10px 0;
+            opacity: 0.9;
+        }
+        .feature-highlight {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+            font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 30px;
+            overflow-x: auto;
+        }
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            min-width: 120px;
+        }
+        .nav-tab.active {
+            background: #667eea;
+            color: white;
+        }
+        .nav-tab:hover:not(.active) {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        /* Workflow Steps */
+        .workflow-container {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .workflow-container.active {
+            display: block;
+        }
+        .workflow-title {
+            font-size: 2em;
+            margin-bottom: 25px;
+            color: #333;
+            text-align: center;
+            font-weight: 700;
+        }
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        .step {
+            background: #f8f9fa;
+            border: 3px solid #e9ecef;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        .step.active::before,
+        .step.completed::before {
+            transform: scaleX(1);
+        }
+        .step.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            transform: translateY(-5px);
+        }
+        .step.completed {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda 0%, #e8f5e8 100%);
+        }
+        .step.disabled {
+            opacity: 0.6;
+        }
+        .step-number {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-weight: bold;
+            font-size: 1.4em;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .step.completed .step-number {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        .step-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .step-description {
+            font-size: 1em;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .btn {
+            padding: 12px 25px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff; 
+        }
+        .btn-primary:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success { 
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: #fff; 
+        }
+        .btn-success:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+        .btn-secondary { 
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: #fff; 
+        }
+        .btn-warning { 
+            background: linear-gradient(135deg, #ffc107, #ff8c00);
+            color: #212529; 
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Status Messages */
+        .status-message {
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-weight: 600;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .status-success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border-left: 5px solid #28a745;
+            display: block;
+        }
+        .status-error {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+            display: block;
+        }
+        .status-info {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border-left: 5px solid #17a2b8;
+            display: block;
+        }
+
+        /* Content Sections */
+        .content-section {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .section-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        /* Video Cards */
+        .videos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+        .video-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+        }
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+        }
+        .video-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+        .video-id {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #667eea;
+        }
+        .video-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-generated {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        .video-text {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            line-height: 1.6;
+            min-height: 100px;
+            overflow: auto;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+        .video-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-small { 
+            padding: 8px 15px; 
+            font-size: 0.9em; 
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Utility Classes */
+        .utility-buttons {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #f8f9fa;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: #666;
+        }
+        .empty-state h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        .result-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border-left: 5px solid #667eea;
+        }
+        .result-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .result-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            line-height: 1.6;
+            border: 1px solid #e9ecef;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .steps {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .nav-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Faceless Video Dashboard</h1>
+            <p class="subtitle">Professional Vietnamese Video Generation Platform</p>
+            <div class="feature-highlight">
+                🚀 Enhanced Database Schema | 📊 Full Analytics | 🎯 5-Part Videos | 👨 Male Voice | ⏱️ 30-Second Coverage
+            </div>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" th:text="${totalArticles ?: 0}">0</div>
+                <div class="stat-label">Total Articles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${totalVideos ?: 0}">0</div>
+                <div class="stat-label">Total Videos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${#lists.size(records ?: {})}">0</div>
+                <div class="stat-label">Video Records</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" th:text="${#lists.size(recentLogs ?: {})}">0</div>
+                <div class="stat-label">Recent Logs</div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showTab('workflow')">📋 Workflow</div>
+            <div class="nav-tab" onclick="showTab('videos')">🎬 Videos</div>
+            <div class="nav-tab" onclick="showTab('articles')">📝 Articles</div>
+            <div class="nav-tab" onclick="showTab('logs')">📊 Logs</div>
+        </div>
+
+        <!-- Workflow Tab -->
+        <div id="workflow" class="content-section active">
+            <div class="workflow-container active">
+                <h2 class="workflow-title">📋 Enhanced Video Generation Workflow</h2>
+                
+                <div class="steps">
+                    <!-- Step 1: Get Headline -->
+                    <div class="step active" id="step1">
+                        <div class="step-number">1</div>
+                        <div class="step-title">📰 Crawl & Store</div>
+                        <div class="step-description">Crawl VNExpress headline and store in SourceContent with hash-based deduplication</div>
+                        <button class="btn btn-primary" onclick="getHeadline()" id="btn-headline">
+                            Get Headline
+                        </button>
+                    </div>
+
+                    <!-- Step 2: Generate Article -->
+                    <div class="step disabled" id="step2">
+                        <div class="step-number">2</div>
+                        <div class="step-title">📝 Generate & Save</div>
+                        <div class="step-description">Create Vietnamese article and save to Article table with full tracking</div>
+                        <button class="btn btn-primary" onclick="generateArticle()" id="btn-article" disabled>
+                            Generate Article
+                        </button>
+                    </div>
+
+                    <!-- Step 3: Create Videos -->
+                    <div class="step disabled" id="step3">
+                        <div class="step-number">3</div>
+                        <div class="step-title">🎬 Create & Track</div>
+                        <div class="step-description">Generate 5 video parts with TTS & Video table entries</div>
+                        <button class="btn btn-primary" onclick="generateVideos()" id="btn-videos" disabled>
+                            Create 5 Videos
+                        </button>
+                    </div>
+
+                    <!-- Step 4: Merge & Save -->
+                    <div class="step disabled" id="step4">
+                        <div class="step-number">4</div>
+                        <div class="step-title">🔗 Merge & Complete</div>
+                        <div class="step-description">Combine videos and update all database records</div>
+                        <button class="btn btn-success" onclick="mergeAndSave()" id="btn-merge" disabled>
+                            Merge & Save
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Utility Buttons -->
+                <div class="utility-buttons">
+                    <button class="btn btn-warning btn-small" onclick="resetWorkflow()">
+                        🔄 Reset Workflow
+                    </button>
+                    <button class="btn btn-secondary btn-small" onclick="location.reload()">
+                        ↻ Refresh Page
+                    </button>
+                    <a href="/test-ffmpeg" class="btn btn-secondary btn-small">
+                        🔧 Test FFmpeg
+                    </a>
+                    <a href="/articles" class="btn btn-secondary btn-small">
+                        📝 View All Articles
+                    </a>
+                    <a href="/processing-logs" class="btn btn-secondary btn-small">
+                        📊 View Processing Logs
+                    </a>
+                </div>
+            </div>
+
+            <!-- Status Messages -->
+            <div id="status-container"></div>
+
+            <!-- Results Display -->
+            <div id="results-container"></div>
+        </div>
+
+        <!-- Videos Tab -->
+        <div id="videos" class="content-section">
+            <h2 class="section-title">🎬 Video Library</h2>
+            
+            <div th:if="${records == null || #lists.isEmpty(records)}" class="empty-state">
+                <h3>No videos generated yet</h3>
+                <p>Use the workflow tab to create your first professional 30-second video with enhanced database tracking!</p>
+            </div>
+
+            <div th:if="${records != null && !#lists.isEmpty(records)}" class="videos-grid">
+                <div th:each="record : ${records}" class="video-card">
+                    <div class="video-header">
+                        <div class="video-id">ID: <span th:text="${record.id}">1</span></div>
+                        <div class="video-status status-completed">Completed</div>
+                    </div>
+                    <div class="video-text" th:text="${record.text}">Sample video text content...</div>
+                    <div class="video-actions">
+                        <a th:if="${record.videoPath != null}" 
+                           th:href="@{'/' + ${record.videoPath}}" 
+                           class="btn btn-primary btn-small" 
+                           target="_blank">
+                            ▶️ Watch Video (~30s)
+                        </a>
+                        <button class="btn btn-secondary btn-small copy-btn"
+                                th:if="${record.videoPath != null}"
+                                th:attr="data-path=${record.videoPath}">
+                            📋 Copy URL
+                        </button>
+                        <button class="btn btn-secondary btn-small" onclick="showVideoDetails(this)"
+                                th:attr="data-id=${record.id}">
+                            ℹ️ Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Articles Tab -->
+        <div id="articles" class="content-section">
+            <h2 class="section-title">📝 Article Archive</h2>
+            
+            <div th:if="${articles == null || #lists.isEmpty(articles)}" class="empty-state">
+                <h3>No articles generated yet</h3>
+                <p>Articles will appear here once you start the workflow process.</p>
+            </div>
+
+            <div th:if="${articles != null && !#lists.isEmpty(articles)}" class="videos-grid">
+                <div th:each="article : ${articles}" class="video-card">
+                    <div class="video-header">
+                        <div class="video-id">Article: <span th:text="${#strings.substring(article.id, 0, 8)}">12345678</span></div>
+                        <div class="video-status" th:classappend="${article.status == 'COMPLETED' ? 'status-completed' : 'status-generated'}" 
+                             th:text="${article.status}">GENERATED</div>
+                    </div>
+                    <div class="video-text" th:text="${#strings.length(article.generatedText) > 200 ? #strings.substring(article.generatedText, 0, 200) + '...' : article.generatedText}">
+                        Article content...
+                    </div>
+                    <div class="video-actions">
+                        <button class="btn btn-primary btn-small" onclick="showArticleModal(this)"
+                                th:attr="data-content=${article.generatedText}">
+                            📖 Read Full
+                        </button>
+                        <span class="btn btn-secondary btn-small" style="cursor: default;">
+                            📅 <span th:text="${#temporals.format(article.createdAt, 'MM/dd HH:mm')}">01/01 12:00</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Tab -->
+        <div id="logs" class="content-section">
+            <h2 class="section-title">📊 Processing Logs</h2>
+            
+            <div th:if="${recentLogs == null || #lists.isEmpty(recentLogs)}" class="empty-state">
+                <h3>No processing logs yet</h3>
+                <p>Processing logs will appear here as you use the system.</p>
+            </div>
+
+            <div th:if="${recentLogs != null && !#lists.isEmpty(recentLogs)}">
+                <div th:each="log : ${recentLogs}" class="video-card" style="margin-bottom: 15px;">
+                    <div class="video-header">
+                        <div class="video-id" th:text="${log.stage}">STAGE</div>
+                        <div class="video-status" 
+                             th:classappend="${log.status == 'COMPLETED' ? 'status-completed' : (log.status == 'FAILED' ? 'status-error' : 'status-generated')}"
+                             th:text="${log.status}">STATUS</div>
+                    </div>
+                    <div class="video-text" th:text="${log.message}">Log message...</div>
+                    <div class="video-actions">
+                        <span class="btn btn-secondary btn-small" style="cursor: default;">
+                            📅 <span th:text="${#temporals.format(log.timestamp, 'MM/dd HH:mm:ss')}">01/01 12:00:00</span>
+                        </span>
+                        <span class="btn btn-secondary btn-small" style="cursor: default;" th:if="${log.relatedId}">
+                            🔗 <span th:text="${#strings.substring(log.relatedId, 0, 8)}">12345678</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Article Modal -->
+    <div id="articleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; padding: 20px; box-sizing: border-box;">
+        <div style="background: white; max-width: 800px; margin: 5% auto; padding: 30px; border-radius: 15px; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #667eea;">Full Article Content</h3>
+                <button onclick="closeArticleModal()" style="background: none; border: none; font-size: 1.5em; cursor: pointer;">✕</button>
+            </div>
+            <div id="articleContent" style="line-height: 1.8; font-size: 1.1em; color: #333;"></div>
+        </div>
+    </div>
+
+    <script>
+        console.log('Enhanced Dashboard loading with new database schema...');
+        
+        // Global state
+        let currentWorkflowState = {
+            sourceContentId: null,
+            keywordId: null,
+            articleId: null,
+            ttsAudioIds: [],
+            videoIds: [],
+            currentStep: 1,
+            totalParts: 5
+        };
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing enhanced workflow...');
+            
+            // Initialize copy buttons for existing videos
+            initializeCopyButtons();
+            
+            // Check workflow status
+            checkWorkflowStatus();
+            
+            console.log('Enhanced dashboard initialized successfully');
+        });
+
+        // Tab Management
+        function showTab(tabName) {
+            // Hide all content sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected content section
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function initializeCopyButtons() {
+            document.querySelectorAll('.copy-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var path = this.getAttribute('data-path');
+                    copyToClipboard(path);
+                });
+            });
+        }
+
+        // Step 1: Get Headline (Enhanced with database storage)
+        async function getHeadline() {
+            console.log('Getting headline with enhanced database storage...');
+            showLoading('btn-headline', 'Crawling & storing...');
+            
+            try {
+                const response = await fetch('/get-headline');
+                const data = await response.json();
+                
+                console.log('Enhanced headline response:', data);
+                
+                if (data.status === 'success') {
+                    currentWorkflowState.sourceContentId = data.sourceContentId;
+                    currentWorkflowState.keywordId = data.keywordId;
+                    currentWorkflowState.currentStep = 2;
+                    
+                    showStatus('success', '✅ Headline stored in database: ' + data.headline);
+                    showResult('headline', 'Headline Crawled & Stored', 
+                        data.headline + '<br><small>Source ID: ' + data.sourceContentId + '</small>');
+                    updateStepStatus(1, 'completed');
+                    updateStepStatus(2, 'active');
+                    enableButton('btn-article');
+                } else if (data.status === 'duplicate') {
+                    showStatus('info', '⚠️ Duplicate content: ' + data.message);
+                } else {
+                    showStatus('error', '❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error getting headline:', error);
+                showStatus('error', '❌ Network error: ' + error.message);
+            }
+            
+            hideLoading('btn-headline', 'Get Headline');
+        }
+
+        // Step 2: Generate Article (Enhanced with database storage)
+        async function generateArticle() {
+            console.log('Generating article with enhanced database tracking...');
+            showLoading('btn-article', 'Generating & saving...');
+            
+            try {
+                const response = await fetch('/generate-article', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        sourceContentId: currentWorkflowState.sourceContentId,
+                        keywordId: currentWorkflowState.keywordId 
+                    })
+                });
+                const data = await response.json();
+                
+                console.log('Enhanced article response:', data);
+                
+                if (data.status === 'success') {
+                    currentWorkflowState.articleId = data.articleId;
+                    currentWorkflowState.currentStep = 3;
+                    
+                    showStatus('success', '✅ Article generated and saved to database!');
+                    showResult('article', 'Article Generated & Stored', 
+                        data.article + '<br><small>Article ID: ' + data.articleId + '</small>');
+                    updateStepStatus(2, 'completed');
+                    updateStepStatus(3, 'active');
+                    enableButton('btn-videos');
+                } else {
+                    showStatus('error', '❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error generating article:', error);
+                showStatus('error', '❌ Network error: ' + error.message);
+            }
+            
+            hideLoading('btn-article', 'Generate Article');
+        }
+
+        // Step 3: Generate 5 Videos (Enhanced with full database tracking)
+        async function generateVideos() {
+            console.log('Generating 5 videos with enhanced database tracking...');
+            showLoading('btn-videos', 'Creating & tracking 5 videos...');
+            
+            try {
+                const response = await fetch('/generate-videos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        articleId: currentWorkflowState.articleId 
+                    })
+                });
+                const data = await response.json();
+                
+                console.log('Enhanced videos response:', data);
+                
+                if (data.status === 'success') {
+                    currentWorkflowState.videoIds = data.videoIds || [];
+                    currentWorkflowState.ttsAudioIds = data.ttsAudioIds || [];
+                    currentWorkflowState.currentStep = 4;
+                    
+                    showStatus('success', '✅ Videos generated with full database tracking: ' + data.successCount + '/5 parts');
+                    showVideoPreview(data.videoPaths, data.failedParts || [], data.videoIds);
+                    updateStepStatus(3, 'completed');
+                    updateStepStatus(4, 'active');
+                    enableButton('btn-merge');
+                } else {
+                    showStatus('error', '❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error generating videos:', error);
+                showStatus('error', '❌ Network error: ' + error.message);
+            }
+            
+            hideLoading('btn-videos', 'Create 5 Videos');
+        }
+
+        // Step 4: Merge and Save (Enhanced with database updates)
+        async function mergeAndSave() {
+            console.log('Merging videos with enhanced database updates...');
+            showLoading('btn-merge', 'Merging & updating database...');
+            
+            try {
+                const response = await fetch('/merge-and-save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                
+                console.log('Enhanced merge response:', data);
+                
+                if (data.status === 'success') {
+                    showStatus('success', '🎉 Videos merged with complete database tracking!');
+                    showResult('final', 'Final Video & Database Update', 
+                        '<a href="' + data.videoUrl + '" target="_blank" class="btn btn-success">▶️ Watch Final Video (~30s)</a>' +
+                        '<br><small>Merged Video ID: ' + data.mergedVideoId + '</small>');
+                    updateStepStatus(4, 'completed');
+                    
+                    // Auto-refresh to show new records after 3 seconds
+                    setTimeout(() => {
+                        location.reload();
+                    }, 3000);
+                } else {
+                    showStatus('error', '❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error merging videos:', error);
+                showStatus('error', '❌ Network error: ' + error.message);
+            }
+            
+            hideLoading('btn-merge', 'Merge & Save');
+        }
+
+        // Enhanced workflow reset
+        async function resetWorkflow() {
+            console.log('Resetting enhanced workflow...');
+            
+            try {
+                await fetch('/reset-workflow', { method: 'POST' });
+                
+                currentWorkflowState = {
+                    sourceContentId: null,
+                    keywordId: null,
+                    articleId: null,
+                    ttsAudioIds: [],
+                    videoIds: [],
+                    currentStep: 1,
+                    totalParts: 5
+                };
+                
+                // Reset UI
+                for (let i = 1; i <= 4; i++) {
+                    updateStepStatus(i, i === 1 ? 'active' : 'disabled');
+                }
+                
+                enableButton('btn-headline');
+                disableButton('btn-article');
+                disableButton('btn-videos');
+                disableButton('btn-merge');
+                
+                clearResults();
+                showStatus('info', '🔄 Enhanced workflow reset. Ready for next generation!');
+                
+            } catch (error) {
+                console.error('Error resetting workflow:', error);
+                showStatus('error', '❌ Reset failed: ' + error.message);
+            }
+        }
+
+        // Enhanced workflow status check
+        async function checkWorkflowStatus() {
+            try {
+                const response = await fetch('/workflow-status');
+                const data = await response.json();
+                
+                console.log('Enhanced workflow status:', data);
+                
+                if (data.canProceedToMerge) {
+                    currentWorkflowState.currentStep = 4;
+                    updateStepStatus(1, 'completed');
+                    updateStepStatus(2, 'completed');
+                    updateStepStatus(3, 'completed');
+                    updateStepStatus(4, 'active');
+                    enableButton('btn-merge');
+                } else if (data.canProceedToVideos) {
+                    currentWorkflowState.currentStep = 3;
+                    updateStepStatus(1, 'completed');
+                    updateStepStatus(2, 'completed');
+                    updateStepStatus(3, 'active');
+                    enableButton('btn-videos');
+                } else if (data.canProceedToGenerate) {
+                    currentWorkflowState.currentStep = 2;
+                    updateStepStatus(1, 'completed');
+                    updateStepStatus(2, 'active');
+                    enableButton('btn-article');
+                }
+            } catch (error) {
+                console.log('Could not check enhanced workflow status:', error);
+            }
+        }
+
+        // Modal functions
+        function showArticleModal(button) {
+            const content = button.getAttribute('data-content');
+            document.getElementById('articleContent').innerText = content;
+            document.getElementById('articleModal').style.display = 'block';
+        }
+
+        function closeArticleModal() {
+            document.getElementById('articleModal').style.display = 'none';
+        }
+
+        function showVideoDetails(button) {
+            const videoId = button.getAttribute('data-id');
+            alert('Video ID: ' + videoId + '\n\nDetailed video information would be displayed here in a full implementation.');
+        }
+
+        // Enhanced video preview with database IDs
+        function showVideoPreview(videoPaths, failedParts, videoIds) {
+            const container = document.getElementById('results-container');
+            if (container) {
+                let videoHtml = '<div class="result-container"><div class="result-title">5 Video Parts Generated with Database Tracking</div>';
+                
+                videoPaths.forEach((path, index) => {
+                    const videoId = videoIds && videoIds[index] ? videoIds[index] : 'N/A';
+                    videoHtml += '<div style="margin: 10px 0; padding: 15px; background: #f8f9fa; border-radius: 8px;">';
+                    videoHtml += '<strong>Part ' + (index + 1) + '/5</strong><br>';
+                    videoHtml += '<small>Video ID: ' + videoId + '</small><br>';
+                    videoHtml += '<a href="/' + path + '" target="_blank" class="btn btn-primary btn-small">▶️ Preview (~6s)</a>';
+                    videoHtml += '</div>';
+                });
+                
+                if (failedParts && failedParts.length > 0) {
+                    videoHtml += '<div style="margin: 10px 0; padding: 15px; background: #f8d7da; border-radius: 8px;">';
+                    videoHtml += '<strong>Failed Parts:</strong> ' + failedParts.join(', ');
+                    videoHtml += '</div>';
+                }
+                
+                videoHtml += '</div>';
+                container.innerHTML += videoHtml;
+            }
+        }
+
+        // UI Helper Functions (enhanced versions)
+        function showLoading(buttonId, text) {
+            const btn = document.getElementById(buttonId);
+            if (btn) {
+                btn.innerHTML = '<span class="loading"></span>' + text;
+                btn.disabled = true;
+            }
+        }
+
+        function hideLoading(buttonId, originalText) {
+            const btn = document.getElementById(buttonId);
+            if (btn) {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        function enableButton(buttonId) {
+            const btn = document.getElementById(buttonId);
+            if (btn) {
+                btn.disabled = false;
+            }
+        }
+
+        function disableButton(buttonId) {
+            const btn = document.getElementById(buttonId);
+            if (btn) {
+                btn.disabled = true;
+            }
+        }
+
+        function updateStepStatus(stepNumber, status) {
+            const step = document.getElementById('step' + stepNumber);
+            if (step) {
+                step.className = 'step ' + status;
+            }
+        }
+
+        function showStatus(type, message) {
+            const container = document.getElementById('status-container');
+            if (container) {
+                container.innerHTML = '<div class="status-message status-' + type + '">' + message + '</div>';
+                
+                // Auto-hide success messages after 5 seconds
+                if (type === 'success') {
+                    setTimeout(() => {
+                        container.innerHTML = '';
+                    }, 5000);
+                }
+            }
+        }
+
+        function showResult(type, title, content) {
+            const container = document.getElementById('results-container');
+            if (container) {
+                const resultHtml = '<div class="result-container">' +
+                    '<div class="result-title">' + title + '</div>' +
+                    '<div class="result-content">' + content + '</div>' +
+                    '</div>';
+                
+                container.innerHTML += resultHtml;
+            }
+        }
+
+        function clearResults() {
+            const resultsContainer = document.getElementById('results-container');
+            const statusContainer = document.getElementById('status-container');
+            if (resultsContainer) resultsContainer.innerHTML = '';
+            if (statusContainer) statusContainer.innerHTML = '';
+        }
+
+        function copyToClipboard(path) {
+            if (!path) {
+                alert("No path to copy!");
+                return;
+            }
+            navigator.clipboard.writeText(window.location.origin + '/' + path).then(function() {
+                showStatus('success', '📋 Video URL copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+                alert('Failed to copy URL to clipboard');
+            });
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('articleModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeArticleModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeArticleModal();
+            }
+        });
+    </script>
+</body>
+</html>

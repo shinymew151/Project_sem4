@@ -1,0 +1,52 @@
+{"properties": [
+  {
+    "name": "voice.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'voice.api.key'"
+  },
+  {
+    "name": "voice.id",
+    "type": "java.lang.String",
+    "description": "A description for 'voice.id'"
+  },
+  {
+    "name": "openai.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'openai.api.key'"
+  },
+  {
+    "name": "gooey.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'gooey.api.key'"
+  },
+  {
+    "name": "gooey.api.url",
+    "type": "java.lang.String",
+    "description": "A description for 'gooey.api.url'"
+  },
+  {
+    "name": "google.tts.api.key",
+    "type": "java.lang.String",
+    "description": "A description for 'google.tts.api.key'"
+  },
+  {
+    "name": "server.base.url",
+    "type": "java.lang.String",
+    "description": "A description for 'server.base.url'"
+  },
+  {
+    "name": "ffmpeg.path",
+    "type": "java.lang.String",
+    "description": "A description for 'ffmpeg.path'"
+  },
+  {
+    "name": "video.processing.timeout",
+    "type": "java.lang.String",
+    "description": "A description for 'video.processing.timeout'"
+  },
+  {
+    "name": "video.max.concurrent.tasks",
+    "type": "java.lang.String",
+    "description": "A description for 'video.max.concurrent.tasks'"
+  }
+]}
